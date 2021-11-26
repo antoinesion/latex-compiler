@@ -8,8 +8,4 @@ WORKDIR /function
 COPY . /function/
 COPY --from=build-stage /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
 COPY --from=build-stage /usr/local/bin/fdk /usr/local/bin/
-COPY --from=fnproject/hotwrap:latest  /hotwrap /hotwrap
-CMD fdk func.py handler
-ENTRYPOINT ["/hotwrap"]
-
-
+ENTRYPOINT ["fdk", "func.py", "handler"]
