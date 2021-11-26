@@ -133,6 +133,9 @@ def handler(ctx, data: io.BytesIO = None):
     job_duration_in_second = round(time.time() - job_start, 2)
     logging.getLogger().info(f"Job done in {job_duration_in_second}s!")
     return response.Response(
-        ctx, response_data=json.dumps({"svg": svg}),
+        ctx, response_data=json.dumps({
+            "message": "compilation succeeded",
+            "svg": svg
+        }),
         headers={"Content-Type": "application/json"}
     )
