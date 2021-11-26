@@ -1,0 +1,8 @@
+schema_version: 20180708
+name: to-svg
+version: 0.0.1
+runtime: docker
+triggers:
+- name: to-svg-http-trigger
+  type: http
+  source: /to-svg
