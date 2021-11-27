@@ -58,10 +58,10 @@ def handler(ctx, data: io.BytesIO = None):
                     ctx, response_data=json.dumps(
                         {
                             "message": f"unable to retrieve image '{image_filename}' at url '{image_url}'",
+                            "code": "image_error",
                             "error": str(e),
                             "image_filename": image_filename,
-                            "image_url": image_url,
-                            "code": "image_error"
+                            "image_url": image_url
                         }),
                     headers={"Content-Type": "application/json"},
                     status_code=400)
@@ -101,8 +101,8 @@ def handler(ctx, data: io.BytesIO = None):
                 ctx, response_data=json.dumps(
                     {
                         "message": "svg size exceeds PostgreSQL limitations",
+                        "code": "svg_size_error",
                         "svg_size": sys.getsizeof(svg),
-                        "code": "svg_size_error"
                     }),
                 headers={"Content-Type": "application/json"},
                 status_code=400)
@@ -110,8 +110,8 @@ def handler(ctx, data: io.BytesIO = None):
         return response.Response(
             ctx, response_data=json.dumps({
                 "message": "unknown error",
-                "error": str(e),
-                "code": "unknown_error"
+                "code": "unknown_error",
+                "error": str(e)
             }),
             headers={"Content-Type": "application/json"}
         )
