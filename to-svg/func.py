@@ -1,11 +1,9 @@
 import io
 import os
 import json
-import logging
 import re
 import sys
 from subprocess import call
-import time
 from tempfile import mkstemp
 from urllib.request import urlretrieve
 
@@ -20,13 +18,10 @@ POSTGRESQL_MAX_FIELD_SIZE = 1e9
 
 
 def handler(ctx, data: io.BytesIO = None):
-    job_start = time.time()
-    logging.getLogger().info("Starting job...")
     try:
         try:
             body = json.loads(data.getvalue())
         except ValueError:
-            logging.getLogger().error("Error: payload is missing.")
             return response.Response(
                 ctx, response_data=json.dumps(
                     {
@@ -37,7 +32,6 @@ def handler(ctx, data: io.BytesIO = None):
                 status_code=400)
 
         if not "latex" in body:
-            logging.getLogger().error("Error: payload is missing")
             return response.Response(
                 ctx, response_data=json.dumps(
                     {
@@ -50,25 +44,21 @@ def handler(ctx, data: io.BytesIO = None):
         latex = body.get("latex")
         images = body.get("images", {})
 
-        logging.getLogger().info("Preparing latex file...")
         os.chdir(COMPILATION_DIR)
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
         os.write(input_file, (LATEX_HEADER + latex).encode('utf-8'))
         os.close(input_file)
 
-        if len(images):
-            logging.getLogger().info("Retrieving images...")
         for (image_filename, image_url) in images.items():
             try:
                 urlretrieve(image_url, image_filename)
             except Exception as e:
-                logging.getLogger().error(
-                    f"Error: unable to retrieve image '{image_filename}' at url '{image_url}'.")
                 return response.Response(
                     ctx, response_data=json.dumps(
                         {
                             "message": f"unable to retrieve image '{image_filename}' at url '{image_url}'",
+                            "error": str(e),
                             "image_filename": image_filename,
                             "image_url": image_url,
                             "code": "image_error"
@@ -76,14 +66,12 @@ def handler(ctx, data: io.BytesIO = None):
                     headers={"Content-Type": "application/json"},
                     status_code=400)
 
-        logging.getLogger().info("Compiling latex...")
         call(['pdflatex', '-shell-escape', input_filename])
         output_filename = input_filename + '.svg'
         try:
             with open(output_filename, "r") as f:
                 pass
         except:
-            logging.getLogger().error("Error: compilation failed.")
             return response.Response(
                 ctx, response_data=json.dumps(
                     {
@@ -93,7 +81,6 @@ def handler(ctx, data: io.BytesIO = None):
                 headers={"Content-Type": "application/json"},
                 status_code=400)
 
-        logging.getLogger().info("Optimizing svg...")
         optimized_filename = input_filename + '.min.svg'
         call(["svgo", "--config", "/function/svgo.config.js",
              output_filename, "-o", optimized_filename])
@@ -110,7 +97,6 @@ def handler(ctx, data: io.BytesIO = None):
         svg = svg[:viewBox_width_attr_start.end()] + "355.05" + \
             svg[viewBox_width_attr_end.end():]
         if sys.getsizeof(svg) > POSTGRESQL_MAX_FIELD_SIZE:
-            logging.getLogger().error("Error: svg size exceeds PostgreSQL limitations")
             return response.Response(
                 ctx, response_data=json.dumps(
                     {
@@ -121,17 +107,15 @@ def handler(ctx, data: io.BytesIO = None):
                 headers={"Content-Type": "application/json"},
                 status_code=400)
     except Exception as e:
-        logging.getLogger().critical(f"Unknown error: {e}")
         return response.Response(
             ctx, response_data=json.dumps({
                 "message": "unknown error",
+                "error": str(e),
                 "code": "unknown_error"
             }),
             headers={"Content-Type": "application/json"}
         )
 
-    job_duration_in_second = round(time.time() - job_start, 2)
-    logging.getLogger().info(f"Job done in {job_duration_in_second}s!")
     return response.Response(
         ctx, response_data=json.dumps({
             "message": "compilation succeeded",
