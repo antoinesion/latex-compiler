@@ -2,7 +2,7 @@ schema_version: 20180708
 name: to-svg
 version: 0.0.1
 runtime: docker
-memory: 128
+memory: 512
 idle_timeout: 600
 triggers:
   - name: to-svg-http-trigger
