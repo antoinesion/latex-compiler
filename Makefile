@@ -1,5 +1,5 @@
 deploy:
-	sudo fn deploy --create-app --all --local --no-bump
+	sudo fn deploy --verbose --create-app --all --local --no-bump
 
 update:
 	git fetch

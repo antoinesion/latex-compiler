@@ -11,7 +11,7 @@ from fdk import response
 
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = """\\batchmode
-\\documentclass[preview,border=1mm,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass[pstricks,preview,border=1mm,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 """
 POSTGRESQL_MAX_FIELD_SIZE = 1e9
