@@ -1,9 +1,9 @@
-FROM antoinesion/python-nodejs-texlive-svg as build-stage
+FROM antoinesion/python-nodejs-texlive-svg:latest as build-stage
 WORKDIR /function
 COPY requirements.txt /function/
 RUN pip install -r requirements.txt
 
-FROM antoinesion/python-nodejs-texlive-svg
+FROM antoinesion/python-nodejs-texlive-svg:latest
 WORKDIR /function
 COPY . /function/
 COPY --from=build-stage /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
