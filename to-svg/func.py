@@ -10,7 +10,8 @@ from urllib.request import urlretrieve
 from fdk import response
 
 COMPILATION_DIR = "/tmp"
-LATEX_HEADER = """\\documentclass[preview,border=1mm,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+LATEX_HEADER = """\\batchmode
+\\documentclass[preview,border=1mm,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 """
 POSTGRESQL_MAX_FIELD_SIZE = 1e9
@@ -65,7 +66,7 @@ def handler(ctx, data: io.BytesIO = None):
                     headers={"Content-Type": "application/json"},
                     status_code=400)
 
-        call(['pdflatex', '-interaction=batchmode', '-shell-escape', input_filename])
+        call(['pdflatex', '-shell-escape', input_filename])
         output_filename = input_filename + '.svg'
         try:
             with open(output_filename, "r") as f:
