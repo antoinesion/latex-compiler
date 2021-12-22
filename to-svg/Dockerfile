@@ -7,10 +7,10 @@ FROM antoinesion/python-texlive
 WORKDIR /function
 COPY . /function/
 
-# nodejs, pdf2svg and ghostscript (ps2pdf) installation
+# nodejs and pdf2svg installation
 RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
 RUN apt-get update \
-    && apt-get install -y nodejs pdf2svg ghostscript \
+    && apt-get install -y nodejs pdf2svg \
     && rm -rf /var/lib/apt/lists/*
 
 # svgo installation

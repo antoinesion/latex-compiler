@@ -1,8 +1,8 @@
 FROM --platform=arm64 python:3.8
 
-# wget installation
+# wget and ghostscript (ps2pdf) installation
 RUN apt-get update \
-    && apt-get install -y wget \
+    && apt-get install -y wget ghostscript \
     && rm -rf /var/lib/apt/lists/*
 
 # texlive installation
