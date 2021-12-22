@@ -13,4 +13,3 @@ RUN rm install-tl-unx.tar.gz
 RUN find . -maxdepth 1 -type d -name "install-tl-*" -exec {}/install-tl -profile texlive.profile \;
 
 ENV PATH="/usr/local/texlive/2021/bin/aarch64-linux:$PATH"
-
