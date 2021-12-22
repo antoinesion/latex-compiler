@@ -1,13 +1,9 @@
 FROM --platform=arm64 python:3.8
 
-# nodejs, pdf2svg and ghostscript (ps2pdf) installation
-RUN curl -fsSL https://deb.nodesource.com/setup_14.x | bash -
+# wget installation
 RUN apt-get update \
-    && apt-get install -y nodejs wget pdf2svg ghostscript \
+    && apt-get install -y wget \
     && rm -rf /var/lib/apt/lists/*
-
-# svgo installation
-RUN npm -g install svgo
 
 # texlive installation
 COPY texlive.profile /
