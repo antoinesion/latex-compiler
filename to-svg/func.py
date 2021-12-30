@@ -2,10 +2,10 @@ import io
 import os
 import json
 import re
-import sys
+from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
 from tempfile import mkstemp
-from urllib.request import urlretrieve
+from email import parser
 
 from fdk import response
 
@@ -14,11 +14,12 @@ LATEX_HEADER = """\\batchmode
 \\documentclass[preview,border=1mm,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 """
-POSTGRESQL_MAX_FIELD_SIZE = 1e9
 
 
 def handler(ctx, data: io.BytesIO = None):
     try:
+        formdata = parser.BytesParser().parsebytes(data.read())
+        print(formdata.get_payload())
         try:
             body = json.loads(data.getvalue())
         except ValueError:
@@ -29,7 +30,7 @@ def handler(ctx, data: io.BytesIO = None):
                         "code": "payload_missing"
                     }),
                 headers={"Content-Type": "application/json"},
-                status_code=400)
+                status_code=BAD_REQUEST)
 
         if not "latex" in body:
             return response.Response(
@@ -39,7 +40,7 @@ def handler(ctx, data: io.BytesIO = None):
                         "code": "latex_missing"
                     }),
                 headers={"Content-Type": "application/json"},
-                status_code=400)
+                status_code=BAD_REQUEST)
 
         latex = body.get("latex")
         images = body.get("images", {})
@@ -50,21 +51,9 @@ def handler(ctx, data: io.BytesIO = None):
         os.write(input_file, (LATEX_HEADER + latex).encode('utf-8'))
         os.close(input_file)
 
-        for (image_filename, image_url) in images.items():
-            try:
-                urlretrieve(image_url, image_filename)
-            except Exception as e:
-                return response.Response(
-                    ctx, response_data=json.dumps(
-                        {
-                            "message": f"unable to retrieve image '{image_filename}' at url '{image_url}'",
-                            "code": "image_error",
-                            "error": str(e),
-                            "image_filename": image_filename,
-                            "image_url": image_url
-                        }),
-                    headers={"Content-Type": "application/json"},
-                    status_code=400)
+        for (image_filename, image_file) in images.items():
+            with open(image_filename, 'wb') as f:
+                f.write(image_file.read())
 
         call(['pdflatex', '-shell-escape', input_filename])
         output_filename = input_filename + '.svg'
@@ -79,7 +68,7 @@ def handler(ctx, data: io.BytesIO = None):
                         "code": "latex_error"
                     }),
                 headers={"Content-Type": "application/json"},
-                status_code=400)
+                status_code=BAD_REQUEST)
 
         optimized_filename = input_filename + '.min.svg'
         call(["svgo", "--config", "/function/svgo.config.js",
@@ -96,16 +85,6 @@ def handler(ctx, data: io.BytesIO = None):
         viewBox_width_attr_end = re.search(r'viewBox="0 0 [0-9.]*', svg)
         svg = svg[:viewBox_width_attr_start.end()] + "355.05" + \
             svg[viewBox_width_attr_end.end():]
-        if sys.getsizeof(svg) > POSTGRESQL_MAX_FIELD_SIZE:
-            return response.Response(
-                ctx, response_data=json.dumps(
-                    {
-                        "message": "svg size exceeds PostgreSQL limitations",
-                        "code": "svg_size_error",
-                        "svg_size": sys.getsizeof(svg),
-                    }),
-                headers={"Content-Type": "application/json"},
-                status_code=400)
     except Exception as e:
         return response.Response(
             ctx, response_data=json.dumps({
@@ -113,7 +92,8 @@ def handler(ctx, data: io.BytesIO = None):
                 "code": "unknown_error",
                 "error": str(e)
             }),
-            headers={"Content-Type": "application/json"}
+            headers={"Content-Type": "application/json"},
+            status_code=INTERNAL_SERVER_ERROR
         )
 
     return response.Response(
@@ -122,5 +102,6 @@ def handler(ctx, data: io.BytesIO = None):
             "code": "success",
             "svg": svg
         }),
-        headers={"Content-Type": "application/json"}
+        headers={"Content-Type": "application/json"},
+        status_code=OK
     )
