@@ -5,7 +5,7 @@ import re
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
 from tempfile import mkstemp
-from requests_toolbelt import MultipartDecoder
+from requests_toolbelt import MultipartDecoder, MultipartEncoder
 
 from fdk import response
 
@@ -23,37 +23,36 @@ def handler(ctx, data: io.BytesIO = None):
     try:
         try:
             decoder = MultipartDecoder(
-                data.read(), ctx.Headers()['content-type'])
+                data.read(), ctx.Headers()["content-type"])
             for field in decoder.parts:
-                field_name = field.headers[b'Content-Disposition'].decode().split(';')[
-                    1].split('=')[1][1:-1]
-                if field_name == 'latex':
+                field_name = field.headers[b"Content-Disposition"].decode().split(";")[
+                    1].split("=")[1][1:-1]
+                if field_name == "latex":
                     latex = field.content
-                    print('latex:', latex)
-                if field_name == 'image[]':
-                    filename = field.headers[b'Content-Disposition'].decode().split(';')[
-                        2].split('=')[1][1:-1]
-                    print('image:', filename)
-                    with open(filename, 'wb') as f:
+                if field_name == "image[]":
+                    filename = field.headers[b"Content-Disposition"].decode().split(";")[
+                        2].split("=")[1][1:-1]
+                    with open(filename, "wb") as f:
                         f.write(field.content)
-        except:
+        except Exception as e:
+            encoder = MultipartEncoder({
+                "message": "cannot parse form data",
+                "code": "parsing_error",
+                "error": str(e)
+            })
             return response.Response(
-                ctx, response_data=json.dumps(
-                    {
-                        "message": "cannot parse form data",
-                        "code": "parsing_error"
-                    }),
-                headers={"Content-Type": "application/json"},
+                ctx, response_data=encoder.to_string(),
+                headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
         if not latex:
+            encoder = MultipartEncoder({
+                "message": "'latex' field is missing in form data",
+                "code": "latex_missing"
+            })
             return response.Response(
-                ctx, response_data=json.dumps(
-                    {
-                        "message": "'latex' field is missing in form data",
-                        "code": "latex_missing"
-                    }),
-                headers={"Content-Type": "application/json"},
+                ctx, response_data=encoder.to_string(),
+                headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
@@ -67,13 +66,13 @@ def handler(ctx, data: io.BytesIO = None):
             with open(output_filename, "r") as f:
                 pass
         except:
+            encoder = MultipartEncoder({
+                "message": "compilation failed",
+                "code": "latex_error"
+            })
             return response.Response(
-                ctx, response_data=json.dumps(
-                    {
-                        "message": "compilation failed",
-                        "code": "latex_error"
-                    }),
-                headers={"Content-Type": "application/json"},
+                ctx, response_data=encoder.to_string(),
+                headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
         optimized_filename = input_filename + '.min.svg'
@@ -93,23 +92,28 @@ def handler(ctx, data: io.BytesIO = None):
         svg = svg[:viewBox_width_attr_start.end()] + "355.05" + \
             svg[viewBox_width_attr_end.end():]
 
+        with open('result.svg', 'w') as f:
+            f.write(svg)
+
     except Exception as e:
+        encoder = MultipartEncoder({
+            "message": "unknown error",
+            "code": "unknown_error",
+            "error": str(e)
+        })
         return response.Response(
-            ctx, response_data=json.dumps({
-                "message": "unknown error",
-                "code": "unknown_error",
-                "error": str(e)
-            }),
-            headers={"Content-Type": "application/json"},
+            ctx, response_data=encoder.to_string(),
+            headers={"Content-Type": encoder.content_type},
             status_code=INTERNAL_SERVER_ERROR
         )
 
+    encoder = MultipartEncoder({
+        "message": "compilation succeeded",
+        "code": "success",
+        "svg": ("result.svg", svg, "image/svg+xml")
+    })
     return response.Response(
-        ctx, response_data=json.dumps({
-            "message": "compilation succeeded",
-            "code": "success",
-            "svg": svg
-        }),
-        headers={"Content-Type": "application/json"},
+        ctx, response_data=encoder.to_string(),
+        headers={"Content-Type": encoder.content_type},
         status_code=OK
     )
