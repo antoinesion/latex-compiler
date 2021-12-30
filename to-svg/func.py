@@ -21,20 +21,30 @@ def handler(ctx, data: io.BytesIO = None):
     latex = None
 
     try:
-        decoder = MultipartDecoder(
-            data.read(), ctx.Headers()['content-type'])
-        for field in decoder.parts:
-            field_name = field.headers[b'Content-Disposition'].decode().split(';')[
-                1].split('=')[1]
-            if field_name == 'latex':
-                latex = field.content
-                print('latex:', latex)
-            if field_name == 'image[]':
-                filename = field.headers[b'Content-Disposition'].decode().split(';')[
-                    2].split('=')[1]
-                print('image:', filename)
-                with open(filename, 'wb') as f:
-                    f.write(field.content)
+        try:
+            decoder = MultipartDecoder(
+                data.read(), ctx.Headers()['content-type'])
+            for field in decoder.parts:
+                field_name = field.headers[b'Content-Disposition'].decode().split(';')[
+                    1].split('=')[1][1:-1]
+                if field_name == 'latex':
+                    latex = field.content
+                    print('latex:', latex)
+                if field_name == 'image[]':
+                    filename = field.headers[b'Content-Disposition'].decode().split(';')[
+                        2].split('=')[1][1:-1]
+                    print('image:', filename)
+                    with open(filename, 'wb') as f:
+                        f.write(field.content)
+        except:
+            return response.Response(
+                ctx, response_data=json.dumps(
+                    {
+                        "message": "cannot parse form data",
+                        "code": "parsing_error"
+                    }),
+                headers={"Content-Type": "application/json"},
+                status_code=BAD_REQUEST)
 
         if not latex:
             return response.Response(
