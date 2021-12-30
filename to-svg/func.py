@@ -5,55 +5,51 @@ import re
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
 from tempfile import mkstemp
-from requests_toolbelt.multipart.decoder import MultipartDecoder
+from requests_toolbelt import MultipartDecoder
 
 from fdk import response
 
 COMPILATION_DIR = "/tmp"
-LATEX_HEADER = """\\batchmode
+LATEX_HEADER = b"""\\batchmode
 \\documentclass[preview,border=1mm,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 """
 
 
 def handler(ctx, data: io.BytesIO = None):
-    try:
-        decoder = MultipartDecoder(data.read(), 'multipart/form-data')
-        print(decoder.parts)
-        try:
-            body = json.loads(data.getvalue())
-        except ValueError:
-            return response.Response(
-                ctx, response_data=json.dumps(
-                    {
-                        "message": "payload is missing",
-                        "code": "payload_missing"
-                    }),
-                headers={"Content-Type": "application/json"},
-                status_code=BAD_REQUEST)
+    os.chdir(COMPILATION_DIR)
+    latex = None
 
-        if not "latex" in body:
+    try:
+        decoder = MultipartDecoder(
+            data.read(), ctx.Headers()['content-type'])
+        for field in decoder.parts:
+            field_name = field.headers[b'Content-Disposition'].decode().split(';')[
+                1].split('=')[1]
+            if field_name == 'latex':
+                latex = field.content
+                print('latex:', latex)
+            if field_name == 'image[]':
+                filename = field.headers[b'Content-Disposition'].decode().split(';')[
+                    2].split('=')[1]
+                print('image:', filename)
+                with open(filename, 'wb') as f:
+                    f.write(field.content)
+
+        if not latex:
             return response.Response(
                 ctx, response_data=json.dumps(
                     {
-                        "message": "'latex' field is missing in payload",
+                        "message": "'latex' field is missing in form data",
                         "code": "latex_missing"
                     }),
                 headers={"Content-Type": "application/json"},
                 status_code=BAD_REQUEST)
 
-        latex = body.get("latex")
-        images = body.get("images", {})
-
-        os.chdir(COMPILATION_DIR)
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
-        os.write(input_file, (LATEX_HEADER + latex).encode('utf-8'))
+        os.write(input_file, LATEX_HEADER + latex)
         os.close(input_file)
-
-        for (image_filename, image_file) in images.items():
-            with open(image_filename, 'wb') as f:
-                f.write(image_file.read())
 
         call(['pdflatex', '-shell-escape', input_filename])
         output_filename = input_filename + '.svg'
@@ -75,6 +71,7 @@ def handler(ctx, data: io.BytesIO = None):
              output_filename, "-o", optimized_filename])
         with open(optimized_filename, 'r') as f:
             svg = f.read()
+
         svg = svg.replace("stroke:#000;", "")
         svg = svg.replace("fill:#000;", "")
         width_attr = re.search(r'width="[0-9.]*(pt)?"\s', svg)
@@ -85,6 +82,7 @@ def handler(ctx, data: io.BytesIO = None):
         viewBox_width_attr_end = re.search(r'viewBox="0 0 [0-9.]*', svg)
         svg = svg[:viewBox_width_attr_start.end()] + "355.05" + \
             svg[viewBox_width_attr_end.end():]
+
     except Exception as e:
         return response.Response(
             ctx, response_data=json.dumps({
