@@ -5,7 +5,7 @@ import re
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
 from tempfile import mkstemp
-from email import parser
+from requests_toolbelt.multipart.decoder import MultipartDecoder
 
 from fdk import response
 
@@ -18,8 +18,8 @@ LATEX_HEADER = """\\batchmode
 
 def handler(ctx, data: io.BytesIO = None):
     try:
-        formdata = parser.BytesParser().parsebytes(data.read())
-        print(formdata.get_payload())
+        decoder = MultipartDecoder(data.read(), 'multipart/form-data')
+        print(decoder.parts)
         try:
             body = json.loads(data.getvalue())
         except ValueError:

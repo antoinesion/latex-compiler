@@ -1,3 +1,4 @@
 fdk>=0.1.40
-autopep8
 uvloop
+requests_toolbelt
+autopep8
