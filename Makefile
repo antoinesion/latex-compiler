@@ -3,11 +3,15 @@ update:
 	git pull
 
 deploy:
-	echo "Removing all containers..."
-	sudo docker rm $(sudo docker ps -a -q)
+	ifneq ($(sudo docker ps -q),)
+	echo "Stopping all containers..."
+	sudo docker stop $(sudo docker ps -q)
+	endif
 	sudo fn deploy --verbose --create-app --local --no-bump $(NAME)
 
 deploy-all:
-	echo "Removing all containers..."
-	sudo docker rm $(sudo docker ps -a -q)
+	ifneq ($(sudo docker ps -q),)
+	echo "Stopping all containers..."
+	sudo docker stop $(sudo docker ps -q)
+	endif
 	sudo fn deploy --verbose --create-app --all --local --no-bump
