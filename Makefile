@@ -3,15 +3,19 @@ update:
 	git pull
 
 deploy:
-ifneq ($(sudo docker ps -q),)
+ifneq ($(shell sudo docker ps -q),)
 	echo "Stopping all containers..."
-	sudo docker stop $(sudo docker ps -q)
+	sudo docker stop $(shell sudo docker ps -q)
 endif
 	sudo fn deploy --verbose --create-app --local --no-bump $(NAME)
+	echo "Pruning docker resources..."
+	sudo docker system prune -f
 
 deploy-all:
-ifneq ($(sudo docker ps -q),)
+ifneq ($(shell sudo docker ps -q),)
 	echo "Stopping all containers..."
-	sudo docker stop $(sudo docker ps -q)
+	sudo docker stop $(shell sudo docker ps -q)
 endif
 	sudo fn deploy --verbose --create-app --all --local --no-bump
+	echo "Pruning docker resources..."
+	sudo docker system prune -f
