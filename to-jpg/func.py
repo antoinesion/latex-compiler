@@ -11,6 +11,7 @@ from fdk import response
 
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
+\\RequirePackage{fix-cm}
 \\documentclass[preview,border=3mm,varwidth=500pt,multi=false]{standalone}
 
 """

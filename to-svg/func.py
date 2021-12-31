@@ -10,6 +10,7 @@ from fdk import response
 
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
+\\RequirePackage{fix-cm}
 \\documentclass[preview,border=1mm,varwidth=500pt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 """
