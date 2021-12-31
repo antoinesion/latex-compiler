@@ -1,16 +1,17 @@
 import io
 import os
-import re
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
 from tempfile import mkstemp
+import fitz
+from PIL import Image
 from requests_toolbelt import MultipartDecoder, MultipartEncoder
 
 from fdk import response
 
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
-\\documentclass[preview,border=1mm,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass{article}
 
 """
 
@@ -18,6 +19,7 @@ LATEX_HEADER = b"""\\batchmode
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
     latex = None
+    resolution = 1
 
     try:
         try:
@@ -28,6 +30,8 @@ def handler(ctx, data: io.BytesIO = None):
                     1].split("=")[1][1:-1]
                 if field_name == "latex":
                     latex = field.content
+                if field_name == "resolution":
+                    resolution = int(field.content.decode())
                 if field_name == "image[]":
                     filename = field.headers[b"Content-Disposition"].decode().split(";")[
                         2].split("=")[1][1:-1]
@@ -60,10 +64,11 @@ def handler(ctx, data: io.BytesIO = None):
         os.close(input_file)
 
         call(['pdflatex', '-shell-escape', input_filename])
-        output_filename = input_filename + '.svg'
+        output_filename = input_filename + '.pdf'
+        matrix = fitz.Matrix(resolution, resolution)
+
         try:
-            with open(output_filename, "r") as f:
-                pass
+            doc = fitz.open(output_filename)
         except:
             encoder = MultipartEncoder({
                 "message": "compilation failed",
@@ -74,25 +79,28 @@ def handler(ctx, data: io.BytesIO = None):
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
-        optimized_filename = input_filename + '.min.svg'
-        call(["svgo", "--config", "/function/svgo.config.js",
-             output_filename, "-o", optimized_filename])
-        with open(optimized_filename, 'r') as f:
-            svg = f.read()
+        images = []
+        for page_num in range(doc.page_count):
+            page = doc.load_page(page_num)
+            pix = page.get_pixmap(matrix=matrix)
+            img = Image.frombytes(
+                "RGB", [pix.width, pix.height], pix.samples)
+            images.append(img)
 
-        svg = svg.replace("stroke:#000;", "")
-        svg = svg.replace("fill:#000;", "")
-        width_attr = re.search(r'width="[0-9.]*(pt)?"\s', svg)
-        svg = svg[:width_attr.start()] + svg[width_attr.end():]
-        height_attr = re.search(r'height="[0-9.]*(pt)?"\s', svg)
-        svg = svg[:height_attr.start()] + svg[height_attr.end():]
-        viewBox_width_attr_start = re.search(r'viewBox="0 0 ', svg)
-        viewBox_width_attr_end = re.search(r'viewBox="0 0 [0-9.]*', svg)
-        svg = svg[:viewBox_width_attr_start.end()] + "355.05" + \
-            svg[viewBox_width_attr_end.end():]
+        widths, heights = zip(*(i.size for i in images))
 
-        with open('result.svg', 'w') as f:
-            f.write(svg)
+        max_width = max(widths)
+        total_height = sum(heights)
+
+        result_img = Image.new('RGB', (max_width, total_height))
+
+        y_offset = 0
+        for img in images:
+            result_img.paste(img, (0, y_offset))
+            y_offset += img.size[1]
+
+        blob = io.BytesIO()
+        result_img.save(blob, 'JPEG')
 
     except Exception as e:
         encoder = MultipartEncoder({
@@ -109,7 +117,7 @@ def handler(ctx, data: io.BytesIO = None):
     encoder = MultipartEncoder({
         "message": "compilation succeeded",
         "code": "success",
-        "svg": ("result.svg", svg, "image/svg+xml")
+        "jpg": ("result.jpg", blob)
     })
     return response.Response(
         ctx, response_data=encoder.to_string(),
