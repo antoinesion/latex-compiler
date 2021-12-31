@@ -1,6 +1,6 @@
 fdk>=0.1.40
 uvloop
-PyMuPDF
+PyMuPDF==1.19.0
 Pillow
 requests_toolbelt
 autopep8

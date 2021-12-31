@@ -1,10 +1,4 @@
 FROM --platform=arm64 python:3.8 as build-stage
-
-# install PyMuPDF build dependency: gcc
-RUN apt-get update \
-    && apt-get install -y gcc \
-    && rm -rf /var/lib/apt/lists/*
-
 COPY requirements.txt /
 RUN pip install -r requirements.txt
 
