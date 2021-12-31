@@ -11,7 +11,7 @@ from fdk import response
 
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
-\\documentclass[preview,border=3mm,multi=false]{standalone}
+\\documentclass[preview,border=3mm,varwidth=500pt,multi=false]{standalone}
 
 """
 

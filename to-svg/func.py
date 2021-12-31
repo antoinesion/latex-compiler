@@ -10,7 +10,7 @@ from fdk import response
 
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
-\\documentclass[preview,border=1mm,varwidth=400pt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass[preview,border=1mm,varwidth=500pt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 """
 
@@ -88,7 +88,7 @@ def handler(ctx, data: io.BytesIO = None):
         svg = svg[:height_attr.start()] + svg[height_attr.end():]
         viewBox_width_attr_start = re.search(r'viewBox="0 0 ', svg)
         viewBox_width_attr_end = re.search(r'viewBox="0 0 [0-9.]*', svg)
-        svg = svg[:viewBox_width_attr_start.end()] + "400" + \
+        svg = svg[:viewBox_width_attr_start.end()] + "504" + \
             svg[viewBox_width_attr_end.end():]
 
         with open('result.svg', 'w') as f:
