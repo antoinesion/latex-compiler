@@ -11,7 +11,7 @@ from fdk import response
 
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
-\\documentclass[border=5mm, preview]{standalone}
+\\documentclass[preview,border=3mm,multi=false]{standalone}
 
 """
 
@@ -19,7 +19,7 @@ LATEX_HEADER = b"""\\batchmode
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
     latex = None
-    resolution = 1
+    resolution = 3
 
     try:
         try:
@@ -79,28 +79,12 @@ def handler(ctx, data: io.BytesIO = None):
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
-        images = []
-        for page_num in range(doc.page_count):
-            page = doc.load_page(page_num)
-            pix = page.get_pixmap(matrix=matrix)
-            img = Image.frombytes(
-                "RGB", [pix.width, pix.height], pix.samples)
-            images.append(img)
-
-        widths, heights = zip(*(i.size for i in images))
-
-        max_width = max(widths)
-        total_height = sum(heights)
-
-        result_img = Image.new('RGB', (max_width, total_height))
-
-        y_offset = 0
-        for img in images:
-            result_img.paste(img, (0, y_offset))
-            y_offset += img.size[1]
-
+        page = doc.load_page(0)
+        pix = page.get_pixmap(matrix=matrix)
+        img = Image.frombytes(
+            "RGB", [pix.width, pix.height], pix.samples)
         blob = io.BytesIO()
-        result_img.save(blob, 'JPEG')
+        img.save(blob, 'JPEG')
 
     except Exception as e:
         encoder = MultipartEncoder({
