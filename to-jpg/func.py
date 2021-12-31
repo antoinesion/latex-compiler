@@ -19,7 +19,7 @@ LATEX_HEADER = b"""\\batchmode
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
     latex = None
-    resolution = 3
+    resolution = 5
 
     try:
         try:
