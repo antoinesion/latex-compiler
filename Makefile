@@ -1,6 +1,6 @@
 update:
-git fetch
-git pull
+	git fetch
+	git pull
 
 deploy:
 ifneq ($(sudo docker ps -q),)
