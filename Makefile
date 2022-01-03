@@ -19,3 +19,6 @@ endif
 	sudo fn deploy --verbose --create-app --all --local --no-bump
 	echo "Pruning docker resources..."
 	sudo docker system prune -f
+
+send-logs:
+	sudo fn update app compile-latex --syslog-url=$(URL)
