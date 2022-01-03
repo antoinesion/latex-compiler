@@ -4,7 +4,7 @@ update:
 
 deploy:
 ifneq ($(shell sudo docker ps -q),)
-	echo "Stopping all containers..."
+	$(info Stopping all containers...)
 	sudo docker stop $(shell sudo docker ps -q)
 endif
 	sudo fn deploy --verbose --create-app --local --no-bump $(NAME)
@@ -13,7 +13,7 @@ endif
 
 deploy-all:
 ifneq ($(shell sudo docker ps -q),)
-	echo "Stopping all containers..."
+	$(info Stopping all containers...)
 	sudo docker stop $(shell sudo docker ps -q)
 endif
 	sudo fn deploy --verbose --create-app --all --local --no-bump
