@@ -72,7 +72,7 @@ def handler(ctx, data: io.BytesIO = None):
         try:
             doc = fitz.open(output_filename)
         except:
-            for tmp_file in glob.glob('*'):
+            for tmp_file in glob.glob(input_filename + '*'):
                 os.remove(tmp_file)
 
             encoder = MultipartEncoder({
@@ -91,13 +91,10 @@ def handler(ctx, data: io.BytesIO = None):
         blob = io.BytesIO()
         img.save(blob, 'JPEG')
 
-        for tmp_file in glob.glob('*'):
+        for tmp_file in glob.glob(input_filename + '*'):
             os.remove(tmp_file)
 
     except Exception as e:
-        for tmp_file in glob.glob('*'):
-            os.remove(tmp_file)
-
         encoder = MultipartEncoder({
             "message": "unknown error",
             "code": "unknown_error",

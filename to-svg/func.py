@@ -67,7 +67,7 @@ def handler(ctx, data: io.BytesIO = None):
             with open(output_filename, "r") as f:
                 pass
         except:
-            for tmp_file in glob.glob('*'):
+            for tmp_file in glob.glob(input_filename + '*'):
                 os.remove(tmp_file)
 
             encoder = MultipartEncoder({
@@ -96,13 +96,10 @@ def handler(ctx, data: io.BytesIO = None):
         svg = svg[:viewBox_width_attr_start.end()] + "504" + \
             svg[viewBox_width_attr_end.end():]
 
-        for tmp_file in glob.glob('*'):
+        for tmp_file in glob.glob(input_filename + '*'):
             os.remove(tmp_file)
 
     except Exception as e:
-        for tmp_file in glob.glob('*'):
-            os.remove(tmp_file)
-
         encoder = MultipartEncoder({
             "message": "unknown error",
             "code": "unknown_error",
