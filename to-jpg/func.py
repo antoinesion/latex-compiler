@@ -72,9 +72,9 @@ def handler(ctx, data: io.BytesIO = None):
         input_filename = os.path.split(input_file_path)[1]
 
         os.write(input_file, LATEX_HEADER % {
-            'padding': padding,
-            'width': width,
-            'latex': latex
+            b'padding': padding,
+            b'width': width,
+            b'latex': latex
         })
         os.close(input_file)
 
