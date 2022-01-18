@@ -21,8 +21,8 @@ LATEX_HEADER = b"""\\batchmode
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
 
-    padding = '5pt'
-    width = '500pt'
+    padding = b'5pt'
+    width = b'500pt'
     latex = None
 
     try:
