@@ -13,13 +13,17 @@ from fdk import response
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border=3mm,varwidth=500pt,multi=false]{standalone}
+\\documentclass[preview,border=%(padding)s,varwidth=%(width)s,multi=false]{standalone}
 
+%(latex)s
 """
 
 
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
+
+    padding = '10pt'
+    width = '1000pt'
     latex = None
     resolution = 5
 
@@ -30,6 +34,10 @@ def handler(ctx, data: io.BytesIO = None):
             for field in decoder.parts:
                 field_name = field.headers[b"Content-Disposition"].decode().split(";")[
                     1].split("=")[1][1:-1]
+                if field_name == "padding":
+                    padding = field.content
+                if field_name == "width":
+                    width = field.content
                 if field_name == "latex":
                     latex = field.content
                 if field_name == "resolution":
@@ -62,7 +70,12 @@ def handler(ctx, data: io.BytesIO = None):
 
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
-        os.write(input_file, LATEX_HEADER + latex)
+
+        os.write(input_file, LATEX_HEADER % {
+            'padding': padding,
+            'width': width,
+            'latex': latex
+        })
         os.close(input_file)
 
         call(['pdflatex', '-shell-escape', input_filename])
