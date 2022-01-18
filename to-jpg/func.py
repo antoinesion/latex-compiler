@@ -13,7 +13,7 @@ from fdk import response
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border=%(padding)s,varwidth=%(width)s,multi=false]{standalone}
+\\documentclass[preview,border=%(padding)spt,varwidth=%(width)spt,multi=false]{standalone}
 
 %(latex)s
 """
@@ -22,8 +22,8 @@ LATEX_HEADER = b"""\\batchmode
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
 
-    padding = b'10pt'
-    width = b'1000pt'
+    padding = b'10'
+    width = b'1000'
     latex = None
     resolution = 5
 

@@ -12,7 +12,7 @@ from fdk import response
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border=%(padding)s,varwidth=%(width)s,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass[preview,border=%(padding)spt,varwidth=%(width)spt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 %(latex)s
 """
@@ -21,8 +21,8 @@ LATEX_HEADER = b"""\\batchmode
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
 
-    padding = b'5pt'
-    width = b'500pt'
+    padding = b'3'
+    width = b'500'
     latex = None
 
     try:
@@ -106,7 +106,8 @@ def handler(ctx, data: io.BytesIO = None):
         svg = svg[:height_attr.start()] + svg[height_attr.end():]
         viewBox_width_attr_start = re.search(r'viewBox="0 0 ', svg)
         viewBox_width_attr_end = re.search(r'viewBox="0 0 [0-9.]*', svg)
-        svg = svg[:viewBox_width_attr_start.end()] + "504" + \
+        svg = svg[:viewBox_width_attr_start.end()] + \
+            str(round(float(width) + float(padding)*2, 3)) + \
             svg[viewBox_width_attr_end.end():]
 
         for tmp_file in glob.glob(input_filename + '*'):
