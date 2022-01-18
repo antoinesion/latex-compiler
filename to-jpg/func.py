@@ -23,7 +23,7 @@ def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
 
     padding = b'10'
-    width = b'1000'
+    width = b'750'
     latex = None
     resolution = 5
 
