@@ -20,5 +20,6 @@ endif
 	echo "Pruning docker resources..."
 	sudo docker system prune -f
 
+# Do not forget protocol in URL (e.g. tcp+tls://...)
 send-logs:
 	sudo fn update app compile-latex --syslog-url=$(URL)

@@ -1,5 +1,4 @@
 fdk>=0.1.40
-Pygments
 uvloop
 requests_toolbelt
 autopep8

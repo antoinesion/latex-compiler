@@ -1,5 +1,4 @@
 fdk>=0.1.40
-Pygments
 uvloop
 PyMuPDF==1.19.0
 Pillow
