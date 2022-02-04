@@ -65,7 +65,9 @@ def handler(ctx, data: io.BytesIO = None):
                 ctx, response_data=encoder.to_string(),
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
-        elif re.search(r"\\begin{document}.*\\end{document}", latex, flags=re.MULTILINE).group(1).strip() == "":
+        elif re.search(r"\\begin{document}.*\\end{document}",
+                       latex.decode(),
+                       flags=re.MULTILINE).group(1).strip() == "":
             latex = '\\'
 
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
