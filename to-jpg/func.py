@@ -1,5 +1,6 @@
 import io
 import os
+import re
 import glob
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
@@ -55,7 +56,7 @@ def handler(ctx, data: io.BytesIO = None):
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
-        if not latex:
+        if latex == None:
             encoder = MultipartEncoder({
                 "message": "'latex' field is missing in form data",
                 "code": "latex_missing"
@@ -64,6 +65,8 @@ def handler(ctx, data: io.BytesIO = None):
                 ctx, response_data=encoder.to_string(),
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
+        elif re.search(r"\\begin{document}.*\\end{document}", latex, flags=re.MULTILINE).group(1).strip() == "":
+            latex = '\\'
 
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
