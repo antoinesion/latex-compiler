@@ -12,7 +12,7 @@ from fdk import response
 COMPILATION_DIR = "/tmp"
 LATEX_HEADER = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border=%(padding)spt,varwidth=%(width)spt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass[preview,border=%(padding)spt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 %(latex)s
 """
@@ -22,7 +22,6 @@ def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
 
     padding = b'3'
-    width = b'500'
     latex = None
 
     try:
@@ -34,8 +33,6 @@ def handler(ctx, data: io.BytesIO = None):
                     1].split("=")[1][1:-1]
                 if field_name == "padding":
                     padding = field.content
-                if field_name == "width":
-                    width = field.content
                 if field_name == "latex":
                     latex = field.content
                 if field_name == "image[]":
@@ -69,7 +66,6 @@ def handler(ctx, data: io.BytesIO = None):
 
         os.write(input_file, LATEX_HEADER % {
             b'padding': padding,
-            b'width': width,
             b'latex': latex
         })
         os.close(input_file)
@@ -104,11 +100,6 @@ def handler(ctx, data: io.BytesIO = None):
         svg = svg[:width_attr.start()] + svg[width_attr.end():]
         height_attr = re.search(r'height="[0-9.]*(pt)?"\s', svg)
         svg = svg[:height_attr.start()] + svg[height_attr.end():]
-        viewBox_width_attr_start = re.search(r'viewBox="0 0 ', svg)
-        viewBox_width_attr_end = re.search(r'viewBox="0 0 [0-9.]*', svg)
-        svg = svg[:viewBox_width_attr_start.end()] + \
-            str(round(float(width) + float(padding)*2, 3)) + \
-            svg[viewBox_width_attr_end.end():]
 
         for tmp_file in glob.glob(input_filename + '*'):
             os.remove(tmp_file)
