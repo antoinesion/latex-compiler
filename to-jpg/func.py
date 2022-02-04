@@ -65,10 +65,11 @@ def handler(ctx, data: io.BytesIO = None):
                 ctx, response_data=encoder.to_string(),
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
-        elif re.search(r"\\begin{document}.*\\end{document}",
+
+        latex = re.sub(r"\\begin{document}",
+                       "\\\\begin{document}\\\\",
                        latex.decode(),
-                       flags=re.MULTILINE).group(1).strip() == "":
-            latex = '\\'
+                       flags=re.MULTILINE)
 
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
