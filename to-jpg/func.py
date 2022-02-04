@@ -66,10 +66,8 @@ def handler(ctx, data: io.BytesIO = None):
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
-        latex = re.sub(r"\\begin{document}",
-                       "\\\\begin{document}\\\\",
-                       latex.decode(),
-                       flags=re.MULTILINE)
+        latex = re.sub(rb"\\begin{document}", b"\\\\begin{document}\\\\ ",
+                       latex, flags=re.MULTILINE)
 
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
