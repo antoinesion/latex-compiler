@@ -68,9 +68,9 @@ def handler(ctx, data: io.BytesIO = None):
 
         document_latex = re.search(rb"\\begin{document}\s*(?:\\fontsize{.*?}{.*?}\\selectfont)?\s*([\s\S]*?)\s*\\end{document}",
                                    latex, flags=re.MULTILINE)
-        if document_latex and document_latex.group(1).strip() == b"":
+        if document_latex and document_latex.group(1) == b"":
             latex = latex[:document_latex.start(
-                1)] + b"\\phantom{ }" + latex[document_latex.end(1):]
+                1)] + b"\\phantom{?}" + latex[document_latex.end(1):]
 
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
