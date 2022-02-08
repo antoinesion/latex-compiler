@@ -125,7 +125,7 @@ def handler(ctx, data: io.BytesIO = None):
         height_attr = re.search(r'height="[0-9.]*"\s', svg)
         svg = svg[:height_attr.start()] + svg[height_attr.end():]
         view_box_width = re.search(
-            r'viewBox="[0-9.]* [0-9.]* ([0-9.]*) [0-9.]*"\s', svg)
+            r'viewBox="[0-9.]* [0-9.]* ([0-9.]*) [0-9.]*"', svg)
         svg_width = float(svg[view_box_width.start(1):view_box_width.end(1)])
         if svg_width / width < 0.9:
             svg = svg[:view_box_width.start(
