@@ -120,10 +120,16 @@ def handler(ctx, data: io.BytesIO = None):
 
         svg = svg.replace("stroke:#000;", "")
         svg = svg.replace("fill:#000;", "")
-        # width_attr = re.search(r'width="([0-9.]*)(pt)?"\s', svg)
-        # svg = svg[:width_attr.start()] + svg[width_attr.end():]
-        # height_attr = re.search(r'height="[0-9.]*(pt)?"\s', svg)
-        # svg = svg[:height_attr.start()] + svg[height_attr.end():]
+        width_attr = re.search(r'width="[0-9.]*"\s', svg)
+        svg = svg[:width_attr.start()] + svg[width_attr.end():]
+        height_attr = re.search(r'height="[0-9.]*"\s', svg)
+        svg = svg[:height_attr.start()] + svg[height_attr.end():]
+        view_box_width = re.search(
+            r'viewBox="[0-9.]* [0-9.]* ([0-9.]*) [0-9.]*"\s', svg)
+        svg_width = float(svg[view_box_width.start(1):view_box_width.end(1)])
+        if svg_width / width < 0.9:
+            svg = svg[:view_box_width.start(
+                1)] + str(width) + svg[view_box_width.end(1):]
 
         for tmp_file in glob.glob(input_filename + '*'):
             os.remove(tmp_file)
