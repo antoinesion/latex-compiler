@@ -29,10 +29,10 @@ LATEX_TEMPLATE = b"""\\batchmode
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
 
-    width = 595
+    width = 595  # A4 width
     padding = 3
     font_size = 10
-    baseline_skip = 12
+    baseline_skip = 1.2
     packages = ''
     latex = None
 
@@ -88,7 +88,7 @@ def handler(ctx, data: io.BytesIO = None):
             b'width': width,
             b'padding': padding,
             b'font_size': font_size,
-            b'baseline_skip': baseline_skip,
+            b'baseline_skip': font_size * baseline_skip,
             b'packages': packages,
             b'latex': latex
         })

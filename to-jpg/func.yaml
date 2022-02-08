@@ -1,6 +1,6 @@
 schema_version: 20180708
 name: to-jpg
-version: 0.0.7
+version: 1.0.0
 runtime: docker
 memory: 512
 idle_timeout: 600

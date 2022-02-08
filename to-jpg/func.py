@@ -12,18 +12,30 @@ from requests_toolbelt import MultipartDecoder, MultipartEncoder
 from fdk import response
 
 COMPILATION_DIR = "/tmp"
-LATEX_HEADER = b"""\\batchmode
+LATEX_TEMPLATE = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border=%(padding)spt,multi=false]{standalone}
+\\documentclass[preview,border=%(padding).1fpt,multi=false]{standalone}
+
+%(packages)s
+\\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}
+
+\\begin{document}
+\\fontsize{%(font_size).1fpt}{%(baseline_skip).1fpt}\selectfont
 
 %(latex)s
+
+\\end{document}
 """
 
 
 def handler(ctx, data: io.BytesIO = None):
     os.chdir(COMPILATION_DIR)
 
-    padding = b'10'
+    width = 595  # A4 width
+    padding = 10
+    font_size = 10
+    baseline_skip = 1.2
+    packages = ''
     latex = None
     resolution = 5
 
@@ -34,12 +46,20 @@ def handler(ctx, data: io.BytesIO = None):
             for field in decoder.parts:
                 field_name = field.headers[b"Content-Disposition"].decode().split(";")[
                     1].split("=")[1][1:-1]
+                if field_name == "width":
+                    width = float(field.content)
                 if field_name == "padding":
-                    padding = field.content
+                    padding = float(field.content)
+                if field_name == "font_size":
+                    font_size = float(field.content)
+                if field_name == "baseline_skip":
+                    baseline_skip = float(field.content)
+                if field_name == "packages":
+                    packages = field.content
                 if field_name == "latex":
                     latex = field.content
                 if field_name == "resolution":
-                    resolution = int(field.content.decode())
+                    resolution = int(field.content)
                 if field_name == "image[]":
                     filename = field.headers[b"Content-Disposition"].decode().split(";")[
                         2].split("=")[1][1:-1]
@@ -66,17 +86,15 @@ def handler(ctx, data: io.BytesIO = None):
                 headers={"Content-Type": encoder.content_type},
                 status_code=BAD_REQUEST)
 
-        document_latex = re.search(rb"\\begin{document}\s*(?:\\fontsize{.*?}{.*?}\\selectfont)?\s*([\s\S]*?)\s*\\end{document}",
-                                   latex, flags=re.MULTILINE)
-        if document_latex and document_latex.group(1) == b"":
-            latex = latex[:document_latex.start(
-                1)] + b"\\phantom{?}" + latex[document_latex.end(1):]
-
         input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
         input_filename = os.path.split(input_file_path)[1]
 
-        os.write(input_file, LATEX_HEADER % {
+        os.write(input_file, LATEX_TEMPLATE % {
+            b'width': width,
             b'padding': padding,
+            b'font_size': font_size,
+            b'baseline_skip': font_size * baseline_skip,
+            b'packages': packages,
             b'latex': latex
         })
         os.close(input_file)
