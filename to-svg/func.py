@@ -12,10 +12,10 @@ from fdk import response
 COMPILATION_DIR = "/tmp"
 LATEX_TEMPLATE = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border=%(padding)ipt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass[preview,border=%(padding).1fpt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 %(packages)s
-\\usepackage[paperwidth=%(width)ipt, margin=0]{geometry}
+\\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}
 
 \\begin{document}
 \\fontsize{%(font_size).1fpt}{%(baseline_skip).1fem}\selectfont
@@ -44,9 +44,9 @@ def handler(ctx, data: io.BytesIO = None):
                 field_name = field.headers[b"Content-Disposition"].decode().split(";")[
                     1].split("=")[1][1:-1]
                 if field_name == "width":
-                    width = int(field.content)
+                    width = float(field.content)
                 if field_name == "padding":
-                    padding = int(field.content)
+                    padding = float(field.content)
                 if field_name == "font_size":
                     font_size = float(field.content)
                 if field_name == "baseline_skip":
