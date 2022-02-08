@@ -18,7 +18,7 @@ LATEX_TEMPLATE = b"""\\batchmode
 \\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}
 
 \\begin{document}
-\\fontsize{%(font_size).1fpt}{%(baseline_skip).1fem}\selectfont
+\\fontsize{%(font_size).1fpt}{%(baseline_skip).1fpt}\selectfont
 
 %(latex)s
 
@@ -32,7 +32,7 @@ def handler(ctx, data: io.BytesIO = None):
     width = 595
     padding = 3
     font_size = 10
-    baseline_skip = 1.2
+    baseline_skip = 12
     packages = ''
     latex = None
 
@@ -127,9 +127,9 @@ def handler(ctx, data: io.BytesIO = None):
         view_box_width = re.search(
             r'viewBox="[0-9.]* [0-9.]* ([0-9.]*) [0-9.]*"', svg)
         svg_width = float(svg[view_box_width.start(1):view_box_width.end(1)])
-        if svg_width / width < 0.9:
+        if svg_width / (width+padding*2) < 0.9:
             svg = svg[:view_box_width.start(
-                1)] + str(width) + svg[view_box_width.end(1):]
+                1)] + str(width+padding*2) + svg[view_box_width.end(1):]
 
         for tmp_file in glob.glob(input_filename + '*'):
             os.remove(tmp_file)
