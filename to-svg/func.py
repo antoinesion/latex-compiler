@@ -140,7 +140,7 @@ def handler(ctx, data: io.BytesIO = None):
             "message": "unknown error",
             "code": "unknown_error",
             "error": str(e),
-            "locals": json.dumps(locals())
+            "locals": str(json.dumps(locals()))
         })
         return response.Response(
             ctx, response_data=encoder.to_string(),
