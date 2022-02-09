@@ -1,6 +1,6 @@
 import io
 import os
-import re
+import json
 import glob
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
@@ -132,7 +132,8 @@ def handler(ctx, data: io.BytesIO = None):
         encoder = MultipartEncoder({
             "message": "unknown error",
             "code": "unknown_error",
-            "error": str(e)
+            "error": str(e),
+            "locals": json.dumps(locals())
         })
         return response.Response(
             ctx, response_data=encoder.to_string(),
