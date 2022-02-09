@@ -2,7 +2,6 @@ import io
 import os
 import re
 import glob
-import json
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
 from tempfile import mkstemp
@@ -136,12 +135,12 @@ def handler(ctx, data: io.BytesIO = None):
             os.remove(tmp_file)
 
     except Exception as e:
-        encoder = MultipartEncoder({
+        local_variables = locals()
+        encoder = MultipartEncoder(dict({
             "message": "unknown error",
             "code": "unknown_error",
             "error": str(e),
-            "locals": str(json.dumps(locals()))
-        })
+        }, **local_variables))
         return response.Response(
             ctx, response_data=encoder.to_string(),
             headers={"Content-Type": encoder.content_type},
