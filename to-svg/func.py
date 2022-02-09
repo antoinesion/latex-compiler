@@ -149,6 +149,8 @@ def handler(ctx, data: io.BytesIO = None):
                 os.remove(tmp_file)
 
         except Exception as e:
+            if svg:
+                svg = svg[:re.search(r'>', svg).end()] + '...</svg>'
             sentry_sdk.capture_exception(e)
             encoder = MultipartEncoder({
                 "message": "unknown error",
