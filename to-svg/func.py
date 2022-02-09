@@ -42,12 +42,7 @@ def handler(ctx, data: io.BytesIO = None):
         baseline_skip = 1.2
         packages = ''
         latex = None
-
-        input_filename = None
-        output_filename = None
-        optimized_filename = None
         svg = None
-        tmp_file = None
 
         try:
             try:
@@ -151,6 +146,15 @@ def handler(ctx, data: io.BytesIO = None):
         except Exception as e:
             if svg:
                 svg = svg[:re.search(r'>', svg).end()] + '...</svg>'
+            sentry_sdk.set_context("data", {
+                "width": width,
+                "padding": padding,
+                "font_size": font_size,
+                "baseline_skip": baseline_skip,
+                "packages": packages,
+                "latex": latex,
+                "svg": svg
+            })
             sentry_sdk.capture_exception(e)
             encoder = MultipartEncoder({
                 "message": "unknown error",
