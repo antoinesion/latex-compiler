@@ -92,14 +92,15 @@ def handler(ctx, data: io.BytesIO = None):
             input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
             input_filename = os.path.split(input_file_path)[1]
 
-            os.write(input_file, LATEX_TEMPLATE % {
+            template_context = {
                 b'width': width,
                 b'padding': padding,
                 b'font_size': font_size,
                 b'baseline_skip': font_size * baseline_skip,
                 b'packages': packages,
                 b'latex': latex
-            })
+            }
+            os.write(input_file, LATEX_TEMPLATE % template_context)
             os.close(input_file)
 
             call(['pdflatex', '-shell-escape', input_filename])
@@ -146,15 +147,8 @@ def handler(ctx, data: io.BytesIO = None):
         except Exception as e:
             if svg:
                 svg = svg[:re.search(r'>', svg).end()] + '...</svg>'
-            sentry_sdk.set_context("data", {
-                "width": width,
-                "padding": padding,
-                "font_size": font_size,
-                "baseline_skip": baseline_skip,
-                "packages": packages,
-                "latex": latex,
-                "svg": svg
-            })
+            sentry_sdk.set_context("data", dict(
+                {'svg': svg}, **template_context))
             sentry_sdk.capture_exception(e)
             encoder = MultipartEncoder({
                 "message": "unknown error",
