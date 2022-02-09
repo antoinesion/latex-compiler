@@ -42,7 +42,6 @@ def handler(ctx, data: io.BytesIO = None):
         baseline_skip = 1.2
         packages = ''
         latex = None
-        svg = None
 
         try:
             try:
@@ -92,15 +91,14 @@ def handler(ctx, data: io.BytesIO = None):
             input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
             input_filename = os.path.split(input_file_path)[1]
 
-            template_context = {
+            os.write(input_file, LATEX_TEMPLATE % {
                 b'width': width,
                 b'padding': padding,
                 b'font_size': font_size,
                 b'baseline_skip': font_size * baseline_skip,
                 b'packages': packages,
                 b'latex': latex
-            }
-            os.write(input_file, LATEX_TEMPLATE % template_context)
+            })
             os.close(input_file)
 
             call(['pdflatex', '-shell-escape', input_filename])
@@ -129,14 +127,11 @@ def handler(ctx, data: io.BytesIO = None):
 
             svg = svg.replace("stroke:#000;", "")
             svg = svg.replace("fill:#000;", "")
-            width_attr = re.search(r'width="[0-9.]*"\s', svg)
-            svg = svg[:width_attr.start()] + svg[width_attr.end():]
-            height_attr = re.search(r'height="[0-9.]*"\s', svg)
-            svg = svg[:height_attr.start()] + svg[height_attr.end():]
+            svg = re.sub(r'width="[0-9.]*(pt)?"\s', '', svg, 1)
+            svg = re.sub(r'height="[0-9.]*(pt)?"\s', '', svg, 1)
             view_box_width = re.search(
                 r'viewBox="[0-9.]* [0-9.]* ([0-9.]*) [0-9.]*"', svg)
-            svg_width = float(
-                svg[view_box_width.start(1):view_box_width.end(1)])
+            svg_width = float(view_box_width.group(1))
             if svg_width / (width+padding*2) < 0.9:
                 svg = svg[:view_box_width.start(
                     1)] + str(width+padding*2) + svg[view_box_width.end(1):]
@@ -145,14 +140,11 @@ def handler(ctx, data: io.BytesIO = None):
                 os.remove(tmp_file)
 
         except Exception as e:
-            if svg:
-                svg = svg[:re.search(r'>', svg).end()] + '...</svg>'
-            sentry_sdk.set_context("data", dict(
-                {'svg': svg}, **template_context))
             sentry_sdk.capture_exception(e)
             encoder = MultipartEncoder({
                 "message": "unknown error",
                 "code": "unknown_error",
+                "error": str(e)
             })
             return response.Response(
                 ctx, response_data=encoder.to_string(),
