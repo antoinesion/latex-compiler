@@ -1,4 +1,5 @@
 fdk>=0.1.40
 uvloop
 requests_toolbelt
+sentry-sdk
 autopep8
