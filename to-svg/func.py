@@ -43,6 +43,12 @@ def handler(ctx, data: io.BytesIO = None):
         packages = ''
         latex = None
 
+        input_filename = None
+        output_filename = None
+        optimized_filename = None
+        svg = None
+        tmp_file = None
+
         try:
             try:
                 decoder = MultipartDecoder(
