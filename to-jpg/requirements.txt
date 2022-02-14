@@ -1,6 +1,6 @@
-fdk>=0.1.40
+fdk>=0.1.42
 uvloop
-PyMuPDF==1.19.0
+PyMuPDF
 Pillow
 requests_toolbelt
 sentry-sdk

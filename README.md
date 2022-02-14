@@ -1,4 +1,4 @@
-# Raspberry Pi LaTeX Compiler Using Fn Project
+# LaTeX Compiler Using Fn Project
 
 ## Useful links
 

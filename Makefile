@@ -2,6 +2,9 @@ update:
 	git fetch
 	git pull
 
+build-docker:
+	sudo docker build -t latex-compiler-base docker/
+
 deploy:
 	sudo fn deploy --verbose --create-app --local --no-bump $(NAME)
 ifneq ($(shell sudo docker ps -q),)

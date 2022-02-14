@@ -1,4 +1,4 @@
-fdk>=0.1.40
+fdk>=0.1.42
 uvloop
 requests_toolbelt
 sentry-sdk

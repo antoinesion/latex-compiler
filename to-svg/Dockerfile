@@ -1,8 +1,8 @@
-FROM --platform=arm64 python:3.8 as build-stage
+FROM python:3.8 as build-stage
 COPY requirements.txt /
 RUN pip install -r requirements.txt
 
-FROM antoinesion/python-texlive
+FROM latex-compiler-base
 
 WORKDIR /function
 COPY . /function/

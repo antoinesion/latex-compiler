@@ -1,4 +1,4 @@
-FROM --platform=arm64 python:3.8
+FROM python:3.8
 
 # wget, ghostscript (pspicture/pdftricks dependency) and python3-pygments (minted dependency)
 RUN apt-get update \
