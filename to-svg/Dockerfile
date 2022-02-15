@@ -1,4 +1,4 @@
-FROM python:3.8 as build-stage
+FROM --platform=amd64 python:3.8 as build-stage
 COPY requirements.txt /
 RUN pip install -r requirements.txt
 
