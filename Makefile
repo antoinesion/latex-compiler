@@ -23,8 +23,8 @@ endif
 	echo "Pruning docker resources..."
 	sudo docker system prune -f
 
-see-logs:
-	systemctl status fnserver
+follow-logs:
+	journalctl -u service-name fnserver
 # Do not forget protocol in URL (e.g. tcp+tls://...)
 send-logs:
 	sudo fn update app compile-latex --syslog-url=$(URL)
