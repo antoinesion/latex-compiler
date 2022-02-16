@@ -41,7 +41,7 @@ def handler(ctx, data: io.BytesIO = None):
         padding = 10
         font_size = 10
         baseline_skip = 1.2
-        packages = ''
+        packages = b''
         latex = None
         resolution = 5
 

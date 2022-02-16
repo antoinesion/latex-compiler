@@ -24,7 +24,7 @@ endif
 	sudo docker system prune -f
 
 follow-logs:
-	journalctl -u service-name fnserver
+	journalctl -u fnserver
 # Do not forget protocol in URL (e.g. tcp+tls://...)
 send-logs:
 	sudo fn update app compile --syslog-url=$(URL)

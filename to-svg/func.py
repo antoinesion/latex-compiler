@@ -40,7 +40,7 @@ def handler(ctx, data: io.BytesIO = None):
         padding = 3
         font_size = 10
         baseline_skip = 1.2
-        packages = ''
+        packages = b''
         latex = None
 
         try:
