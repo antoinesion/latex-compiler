@@ -13,7 +13,7 @@ from fdk import response
 
 sentry_sdk.init(
     "https://abb12a4b6cf84dd792da1caf55016e87@o1109165.ingest.sentry.io/6194998",
-    traces_sample_rate=1.0
+    traces_sample_rate=0.1
 )
 
 COMPILATION_DIR = "/tmp"

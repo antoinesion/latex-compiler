@@ -7,13 +7,12 @@ from subprocess import call
 from tempfile import mkstemp
 from requests_toolbelt import MultipartDecoder, MultipartEncoder
 import sentry_sdk
-import logging
 
 from fdk import response
 
 sentry_sdk.init(
     "https://abb12a4b6cf84dd792da1caf55016e87@o1109165.ingest.sentry.io/6194998",
-    traces_sample_rate=1.0
+    traces_sample_rate=0.1
 )
 
 COMPILATION_DIR = "/tmp"
@@ -35,9 +34,6 @@ LATEX_TEMPLATE = b"""\\batchmode
 
 def handler(ctx, data: io.BytesIO = None):
     with sentry_sdk.start_transaction(op="task", name="to-svg"):
-        logger = logging.getLogger()
-        logger.log(logging.INFO, "running")
-
         os.chdir(COMPILATION_DIR)
 
         width = 595  # A4 width
