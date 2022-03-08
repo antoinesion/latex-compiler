@@ -18,7 +18,7 @@ sentry_sdk.init(
 COMPILATION_DIR = "/tmp"
 LATEX_TEMPLATE = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border=%(padding).1fpt,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass[preview,border={%(padding_left).1fpt %(padding_bottom).1fpt %(padding_right).1fpt %(padding_top).1fpt},convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 %(packages)s
 \\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}
@@ -37,7 +37,10 @@ def handler(ctx, data: io.BytesIO = None):
         os.chdir(COMPILATION_DIR)
 
         width = 595  # A4 width
-        padding = 3
+        padding_left = 3
+        padding_bottom = 3
+        padding_right = 3
+        padding_top = 3
         font_size = 10
         baseline_skip = 1.2
         packages = b''
@@ -53,7 +56,16 @@ def handler(ctx, data: io.BytesIO = None):
                     if field_name == "width":
                         width = float(field.content)
                     if field_name == "padding":
-                        padding = float(field.content)
+                        padding_left = padding_bottom = padding_right = padding_top = float(
+                            field.content)
+                    if field_name == "padding_left":
+                        padding_left = float(field.content)
+                    if field_name == "padding_bottom":
+                        padding_bottom = float(field.content)
+                    if field_name == "padding_right":
+                        padding_right = float(field.content)
+                    if field_name == "padding_top":
+                        padding_top = float(field.content)
                     if field_name == "font_size":
                         font_size = float(field.content)
                     if field_name == "baseline_skip":
@@ -93,7 +105,10 @@ def handler(ctx, data: io.BytesIO = None):
 
             os.write(input_file, LATEX_TEMPLATE % {
                 b'width': width,
-                b'padding': padding,
+                b'padding_left': padding_left,
+                b'padding_bottom': padding_bottom,
+                b'padding_right': padding_right,
+                b'padding_top': padding_top,
                 b'font_size': font_size,
                 b'baseline_skip': font_size * baseline_skip,
                 b'packages': packages,
@@ -132,9 +147,9 @@ def handler(ctx, data: io.BytesIO = None):
             view_box_width = re.search(
                 r'viewBox="[0-9.]* [0-9.]* ([0-9.]*) [0-9.]*"', svg)
             svg_width = float(view_box_width.group(1))
-            if svg_width / (width+padding*2) < 0.9:
+            if svg_width / (padding_left+width+padding_right) < 0.9:
                 svg = svg[:view_box_width.start(
-                    1)] + str(width+padding*2) + svg[view_box_width.end(1):]
+                    1)] + str(padding_left+width+padding_right) + svg[view_box_width.end(1):]
 
             for tmp_file in glob.glob(input_filename + '*'):
                 os.remove(tmp_file)
