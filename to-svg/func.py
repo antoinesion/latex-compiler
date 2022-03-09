@@ -142,6 +142,7 @@ def handler(ctx, data: io.BytesIO = None):
 
             svg = svg.replace('fill="#000"', 'fill="currentColor"')
             svg = svg.replace('stroke="#000"', 'stroke="currentColor"')
+            svg = svg.replace(' fill-opacity="1"', '')
             svg = re.sub(r'width="[0-9.]*(pt)?"\s', '', svg, 1)
             svg = re.sub(r'height="[0-9.]*(pt)?"\s', '', svg, 1)
             view_box_width = re.search(
