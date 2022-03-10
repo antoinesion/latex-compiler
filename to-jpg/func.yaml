@@ -2,7 +2,8 @@ schema_version: 20180708
 name: to-jpg
 version: 1.2.0
 runtime: docker
-memory: 512
+memory: 1048
+timeout: 30
 idle_timeout: 600
 triggers:
   - name: to-jpg-http-trigger
