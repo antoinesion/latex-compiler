@@ -23,6 +23,5 @@ module.exports = {
         },
       },
     },
-    "convertStyleToAttrs",
   ],
 };
