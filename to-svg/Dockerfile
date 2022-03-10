@@ -15,7 +15,7 @@ RUN apt-get update \
 
 # svgo installation
 RUN npm -g install svgo
-ENV NODE_OPTIONS=--max_old_space_size=4096
+ENV NODE_OPTIONS=--max_old_space_size=8192
 
 # copy pip packages
 COPY --from=build-stage /usr/local/lib/python3.8/site-packages/ /usr/local/lib/python3.8/site-packages/
