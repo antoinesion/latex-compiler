@@ -32,11 +32,18 @@ LATEX_TEMPLATE = b"""\\batchmode
 \\end{document}
 """
 
+PX_TO_PT_FACTOR = 0.75
+
+
+def px_to_pt(px: float) -> float:
+    return round(px * PX_TO_PT_FACTOR, 2)
+
 
 def handler(ctx, data: io.BytesIO = None):
     with sentry_sdk.start_transaction(op="task", name="to-jpg"):
         os.chdir(COMPILATION_DIR)
 
+        # values in pt
         width = 595  # A4 width
         padding_left = 10
         padding_bottom = 10
@@ -56,20 +63,20 @@ def handler(ctx, data: io.BytesIO = None):
                     field_name = field.headers[b"Content-Disposition"].decode().split(";")[
                         1].split("=")[1][1:-1]
                     if field_name == "width":
-                        width = float(field.content)
+                        width = px_to_pt(float(field.content))
                     if field_name == "padding":
-                        padding_left = padding_bottom = padding_right = padding_top = float(
-                            field.content)
+                        padding_left = padding_bottom = padding_right = padding_top = px_to_pt(
+                            float(field.content))
                     if field_name == "padding_left":
-                        padding_left = float(field.content)
+                        padding_left = px_to_pt(float(field.content))
                     if field_name == "padding_bottom":
-                        padding_bottom = float(field.content)
+                        padding_bottom = px_to_pt(float(field.content))
                     if field_name == "padding_right":
-                        padding_right = float(field.content)
+                        padding_right = px_to_pt(float(field.content))
                     if field_name == "padding_top":
-                        padding_top = float(field.content)
+                        padding_top = px_to_pt(float(field.content))
                     if field_name == "font_size":
-                        font_size = float(field.content)
+                        font_size = px_to_pt(float(field.content))
                     if field_name == "baseline_skip":
                         baseline_skip = float(field.content)
                     if field_name == "packages":
