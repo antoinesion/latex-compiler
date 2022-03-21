@@ -17,7 +17,7 @@ sentry_sdk.init(
 COMPILATION_DIR = "/tmp"
 LATEX_TEMPLATE = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass{report}
+%(document_class)s
 
 %(packages)s
 
@@ -41,6 +41,7 @@ def handler(ctx, data: io.BytesIO = None):
         os.chdir(COMPILATION_DIR)
 
         # values in pt
+        document_class = b'\\documentclass{report}'
         font_size = 10
         baseline_skip = 1.2
         packages = b''
@@ -53,6 +54,8 @@ def handler(ctx, data: io.BytesIO = None):
                 for field in decoder.parts:
                     field_name = field.headers[b"Content-Disposition"].decode().split(";")[
                         1].split("=")[1][1:-1]
+                    if field_name == "document_class":
+                        document_class = field.content
                     if field_name == "font_size":
                         font_size = px_to_pt(float(field.content))
                     if field_name == "baseline_skip":
@@ -91,6 +94,7 @@ def handler(ctx, data: io.BytesIO = None):
             input_filename = os.path.split(input_file_path)[1]
 
             os.write(input_file, LATEX_TEMPLATE % {
+                b'document_class': document_class,
                 b'font_size': font_size,
                 b'baseline_skip': font_size * baseline_skip,
                 b'packages': packages,
