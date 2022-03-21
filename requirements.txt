@@ -1,4 +1,7 @@
 fdk>=0.1.44
 uvloop
+PyMuPDF
+Pillow
 requests_toolbelt
 sentry-sdk
+autopep8

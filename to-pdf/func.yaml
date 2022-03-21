@@ -1,0 +1,11 @@
+schema_version: 20180708
+name: to-pdf
+version: 1.0.0
+runtime: docker
+memory: 1048
+timeout: 30
+idle_timeout: 600
+triggers:
+  - name: to-pdf-http-trigger
+    type: http
+    source: /to-pdf
