@@ -42,6 +42,7 @@ def handler(ctx, data: io.BytesIO = None):
 
         # values in pt
         document_class = b'\\documentclass{report}'
+        double_compilation = False
         font_size = 10
         baseline_skip = 1.2
         packages = b''
@@ -56,6 +57,8 @@ def handler(ctx, data: io.BytesIO = None):
                         1].split("=")[1][1:-1]
                     if field_name == "document_class":
                         document_class = field.content
+                    if field_name == "double_compilation":
+                        double_compilation = field.content.decode() == "True"
                     if field_name == "font_size":
                         font_size = px_to_pt(float(field.content))
                     if field_name == "baseline_skip":
@@ -103,6 +106,9 @@ def handler(ctx, data: io.BytesIO = None):
             os.close(input_file)
 
             call(['pdflatex', '-shell-escape', input_filename])
+            if double_compilation:
+                call(['pdflatex', '-shell-escape', input_filename])
+
             output_filename = input_filename + '.pdf'
 
             try:
