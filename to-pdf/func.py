@@ -15,7 +15,7 @@ sentry_sdk.init(
 )
 
 COMPILATION_DIR = "/tmp"
-LATEX_TEMPLATE = b"""\\batchmode
+LATEX_TEMPLATE = b"""
 \\RequirePackage{fix-cm}
 %(document_class)s
 
