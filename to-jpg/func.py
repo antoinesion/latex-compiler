@@ -17,8 +17,7 @@ sentry_sdk.init(
 )
 
 COMPILATION_DIR = "/tmp"
-LATEX_TEMPLATE = b"""\\batchmode
-\\RequirePackage{fix-cm}
+LATEX_TEMPLATE = b"""\\RequirePackage{fix-cm}
 \\documentclass[preview,border={%(padding_left).1fpt %(padding_bottom).1fpt %(padding_right).1fpt %(padding_top).1fpt},multi=false]{standalone}
 
 %(packages)s
