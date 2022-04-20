@@ -21,7 +21,7 @@ COMPILATION_DIR = "/tmp"
 WIDTH_CONSTRAIN = b"\\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}"
 LATEX_TEMPLATE = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border={%(padding_left).1fpt %(padding_bottom).1fpt %(padding_right).1fpt %(padding_top).1fpt,varwidth=%(varwidth)s},multi=false]{standalone}
+\\documentclass[preview,border={%(padding_left).1fpt %(padding_bottom).1fpt %(padding_right).1fpt %(padding_top).1fpt},varwidth=%(varwidth)s,multi=false]{standalone}
 
 %(packages)s
 %(width_constrain)s
