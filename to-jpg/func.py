@@ -48,10 +48,10 @@ def handler(ctx, data: io.BytesIO = None):
         width = None
 
         # values in pt
-        padding_left = 10
-        padding_bottom = 10
-        padding_right = 10
-        padding_top = 10
+        padding_left = 3
+        padding_bottom = 3
+        padding_right = 3
+        padding_top = 3
         font_size = 10
 
         baseline_skip = 1.2
