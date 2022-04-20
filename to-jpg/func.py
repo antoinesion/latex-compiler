@@ -123,7 +123,7 @@ def handler(ctx, data: io.BytesIO = None):
             if not width is None:
                 width_constrain = WIDTH_CONSTRAIN % {b'width': width}
             else:
-                width_constrain = ""
+                width_constrain = b''
 
             os.write(input_file, LATEX_TEMPLATE % {
                 b'width_constrain': width_constrain,

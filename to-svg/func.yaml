@@ -1,6 +1,6 @@
 schema_version: 20180708
 name: to-svg
-version: 1.4.0
+version: 1.5.0
 runtime: docker
 memory: 2048
 timeout: 30

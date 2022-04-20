@@ -16,12 +16,13 @@ sentry_sdk.init(
 )
 
 COMPILATION_DIR = "/tmp"
+WIDTH_CONSTRAIN = b"\\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}"
 LATEX_TEMPLATE = b"""\\batchmode
 \\RequirePackage{fix-cm}
 \\documentclass[preview,border={%(padding_left).1fpt %(padding_bottom).1fpt %(padding_right).1fpt %(padding_top).1fpt},convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 %(packages)s
-\\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}
+%(width_constrain)s
 
 \\begin{document}
 \\fontsize{%(font_size).1fpt}{%(baseline_skip).1fpt}\selectfont
@@ -42,13 +43,15 @@ def handler(ctx, data: io.BytesIO = None):
     with sentry_sdk.start_transaction(op="task", name="to-svg"):
         os.chdir(COMPILATION_DIR)
 
+        width = None
+
         # values in pt
-        width = 595  # A4 width
         padding_left = 3
         padding_bottom = 3
         padding_right = 3
         padding_top = 3
         font_size = 10
+
         baseline_skip = 1.2
         packages = b''
         latex = None
@@ -61,7 +64,10 @@ def handler(ctx, data: io.BytesIO = None):
                     field_name = field.headers[b"Content-Disposition"].decode().split(";")[
                         1].split("=")[1][1:-1]
                     if field_name == "width":
-                        width = px_to_pt(float(field.content))
+                        if field.content == b'a4':
+                            width = 595
+                        else:
+                            width = px_to_pt(float(field.content))
                     if field_name == "padding":
                         padding_left = padding_bottom = padding_right = padding_top = px_to_pt(
                             float(field.content))
@@ -110,8 +116,13 @@ def handler(ctx, data: io.BytesIO = None):
             input_file, input_file_path = mkstemp(dir=COMPILATION_DIR)
             input_filename = os.path.split(input_file_path)[1]
 
+            if not width is None:
+                width_constrain = WIDTH_CONSTRAIN % {b'width': width}
+            else:
+                width_constrain = b''
+
             os.write(input_file, LATEX_TEMPLATE % {
-                b'width': width,
+                b'width_constrain': width_constrain,
                 b'padding_left': padding_left,
                 b'padding_bottom': padding_bottom,
                 b'padding_right': padding_right,

@@ -2,7 +2,7 @@ schema_version: 20180708
 name: to-pdf
 version: 1.2.0
 runtime: docker
-memory: 1048
+memory: 1024
 timeout: 30
 idle_timeout: 600
 triggers:
