@@ -66,7 +66,7 @@ def handler(ctx, data: io.BytesIO = None):
                     field_name = field.headers[b"Content-Disposition"].decode().split(";")[
                         1].split("=")[1][1:-1]
                     if field_name == "width":
-                        if field.content != b'a4':
+                        if field.content == b'a4':
                             width = 595
                         else:
                             width = px_to_pt(float(field.content))
