@@ -19,7 +19,7 @@ COMPILATION_DIR = "/tmp"
 WIDTH_CONSTRAIN = b"\\usepackage[paperwidth=%(width).1fpt, margin=0]{geometry}"
 LATEX_TEMPLATE = b"""\\batchmode
 \\RequirePackage{fix-cm}
-\\documentclass[preview,border={%(padding_left).1fpt %(padding_bottom).1fpt %(padding_right).1fpt %(padding_top).1fpt},convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
+\\documentclass[preview,border={%(padding_left).1fpt %(padding_bottom).1fpt %(padding_right).1fpt %(padding_top).1fpt},varwidth=%(varwidth)s,convert={outext=.svg,command=\\unexpanded{pdf2svg \\infile\\space\\outfile}},multi=false]{standalone}
 
 %(packages)s
 %(width_constrain)s
@@ -118,11 +118,14 @@ def handler(ctx, data: io.BytesIO = None):
 
             if not width is None:
                 width_constrain = WIDTH_CONSTRAIN % {b'width': width}
+                varwidth = b'false'
             else:
                 width_constrain = b''
+                varwidth = b'true'
 
             os.write(input_file, LATEX_TEMPLATE % {
                 b'width_constrain': width_constrain,
+                b'varwidth': varwidth,
                 b'padding_left': padding_left,
                 b'padding_bottom': padding_bottom,
                 b'padding_right': padding_right,
