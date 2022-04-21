@@ -121,7 +121,7 @@ def handler(ctx, data: io.BytesIO = None):
                 varwidth = b'false'
             else:
                 width_constrain = b''
-                varwidth = b'true'
+                varwidth = b'595pt'
 
             os.write(input_file, LATEX_TEMPLATE % {
                 b'width_constrain': width_constrain,
