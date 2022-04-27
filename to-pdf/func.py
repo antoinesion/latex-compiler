@@ -4,6 +4,7 @@ import glob
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
 from subprocess import call
 from tempfile import mkstemp
+from typing import List, Optional
 from requests_toolbelt import MultipartDecoder, MultipartEncoder
 import sentry_sdk
 
@@ -36,6 +37,14 @@ def px_to_pt(px: float) -> float:
     return round(px * PX_TO_PT_FACTOR, 2)
 
 
+def clean_files(input_filename: Optional[str], images_filename: List[str] = []) -> None:
+    if input_filename:
+        for tmp_file in glob.glob(input_filename + '*'):
+            os.remove(tmp_file)
+    for image_filename in images_filename:
+        os.remove(image_filename)
+
+
 def handler(ctx, data: io.BytesIO = None):
     with sentry_sdk.start_transaction(op="task", name="to-pdf"):
         os.chdir(COMPILATION_DIR)
@@ -47,6 +56,9 @@ def handler(ctx, data: io.BytesIO = None):
         baseline_skip = 1.2
         packages = b''
         latex = None
+
+        images_filename = []
+        input_filename = None
 
         try:
             try:
@@ -72,7 +84,10 @@ def handler(ctx, data: io.BytesIO = None):
                             2].split("=")[1][1:-1]
                         with open(filename, "wb") as f:
                             f.write(field.content)
+                        images_filename.append(filename)
             except Exception as e:
+                clean_files(input_filename=input_filename,
+                            images_filename=images_filename)
                 encoder = MultipartEncoder({
                     "message": "cannot parse form data",
                     "code": "parsing_error",
@@ -115,9 +130,8 @@ def handler(ctx, data: io.BytesIO = None):
                 with open(output_filename, "rb") as f:
                     blob = io.BytesIO(f.read())
             except:
-                for tmp_file in glob.glob(input_filename + '*'):
-                    os.remove(tmp_file)
-
+                clean_files(input_filename=input_filename,
+                            images_filename=images_filename)
                 encoder = MultipartEncoder({
                     "message": "compilation failed",
                     "code": "latex_error"
@@ -127,10 +141,12 @@ def handler(ctx, data: io.BytesIO = None):
                     headers={"Content-Type": encoder.content_type},
                     status_code=BAD_REQUEST)
 
-            for tmp_file in glob.glob(input_filename + '*'):
-                os.remove(tmp_file)
+            clean_files(input_filename=input_filename,
+                        images_filename=images_filename)
 
         except Exception as e:
+            clean_files(input_filename=input_filename,
+                        images_filename=images_filename)
             sentry_sdk.capture_exception(e)
             encoder = MultipartEncoder({
                 "message": "unknown error",

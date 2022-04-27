@@ -1,6 +1,6 @@
 schema_version: 20180708
 name: to-jpg
-version: 1.4.4
+version: 1.4.5
 runtime: docker
 memory: 1024
 timeout: 30
