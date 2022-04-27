@@ -187,9 +187,6 @@ def handler(ctx, data: io.BytesIO = None):
                 svg = svg[:view_box_width.start(
                     1)] + str(padding_left+width+padding_right) + svg[view_box_width.end(1):]
 
-            clean_files(input_filename=input_filename,
-                        images_filename=images_filename)
-
         except Exception as e:
             clean_files(input_filename=input_filename,
                         images_filename=images_filename)
@@ -205,6 +202,8 @@ def handler(ctx, data: io.BytesIO = None):
                 status_code=INTERNAL_SERVER_ERROR
             )
 
+        clean_files(input_filename=input_filename,
+                    images_filename=images_filename)
         encoder = MultipartEncoder({
             "message": "compilation succeeded",
             "code": "success",

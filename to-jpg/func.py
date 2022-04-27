@@ -182,9 +182,6 @@ def handler(ctx, data: io.BytesIO = None):
             blob = io.BytesIO()
             img.save(blob, 'JPEG')
 
-            clean_files(input_filename=input_filename,
-                        images_filename=images_filename)
-
         except Exception as e:
             clean_files(input_filename=input_filename,
                         images_filename=images_filename)
@@ -200,6 +197,8 @@ def handler(ctx, data: io.BytesIO = None):
                 status_code=INTERNAL_SERVER_ERROR
             )
 
+        clean_files(input_filename=input_filename,
+                    images_filename=images_filename)
         encoder = MultipartEncoder({
             "message": "compilation succeeded",
             "code": "success",
