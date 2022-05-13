@@ -3,7 +3,7 @@ name: to-pdf
 version: 1.2.1
 runtime: docker
 memory: 1024
-timeout: 30
+timeout: 20
 idle_timeout: 600
 triggers:
   - name: to-pdf-http-trigger
