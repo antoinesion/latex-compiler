@@ -3,7 +3,7 @@ name: to-svg
 version: 1.5.4
 runtime: docker
 memory: 2048
-timeout: 10
+timeout: 30
 idle_timeout: 600
 triggers:
   - name: to-svg-http-trigger

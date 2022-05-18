@@ -3,7 +3,7 @@ name: to-jpg
 version: 1.4.5
 runtime: docker
 memory: 1024
-timeout: 10
+timeout: 30
 idle_timeout: 600
 triggers:
   - name: to-jpg-http-trigger
