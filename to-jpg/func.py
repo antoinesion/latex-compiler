@@ -3,7 +3,7 @@ import io
 import os
 import glob
 from http.client import OK, BAD_REQUEST, INTERNAL_SERVER_ERROR
-from subprocess import call
+from subprocess import call, TimeoutExpired
 from tempfile import mkstemp
 from typing import List, Optional
 import fitz
@@ -11,7 +11,8 @@ from PIL import Image
 from requests_toolbelt import MultipartDecoder, MultipartEncoder
 import sentry_sdk
 
-from fdk import response
+from fdk.response import Response
+from fdk.context import InvokeContext
 
 sentry_sdk.init(
     "https://abb12a4b6cf84dd792da1caf55016e87@o1109165.ingest.sentry.io/6194998",
@@ -50,7 +51,7 @@ def clean_files(input_filename: Optional[str], images_filename: List[str] = []) 
         os.remove(image_filename)
 
 
-def handler(ctx, data: io.BytesIO = None):
+def handler(ctx: InvokeContext, data: io.BytesIO = None):
     with sentry_sdk.start_transaction(op="task", name="to-jpg"):
         os.chdir(COMPILATION_DIR)
 
@@ -70,6 +71,8 @@ def handler(ctx, data: io.BytesIO = None):
 
         images_filename = []
         input_filename = None
+
+        compilation_timeout = 10
 
         try:
             try:
@@ -110,6 +113,8 @@ def handler(ctx, data: io.BytesIO = None):
                         with open(filename, "wb") as f:
                             f.write(field.content)
                         images_filename.append(filename)
+                    if field_name == "compilation_timeout":
+                        compilation_timeout = min(float(field.content), 20)
             except Exception as e:
                 clean_files(input_filename=input_filename,
                             images_filename=images_filename)
@@ -118,7 +123,7 @@ def handler(ctx, data: io.BytesIO = None):
                     "code": "parsing_error",
                     "error": str(e)
                 })
-                return response.Response(
+                return Response(
                     ctx, response_data=encoder.to_string(),
                     headers={"Content-Type": encoder.content_type},
                     status_code=BAD_REQUEST)
@@ -128,7 +133,7 @@ def handler(ctx, data: io.BytesIO = None):
                     "message": "'latex' field is missing in form data",
                     "code": "latex_missing"
                 })
-                return response.Response(
+                return Response(
                     ctx, response_data=encoder.to_string(),
                     headers={"Content-Type": encoder.content_type},
                     status_code=BAD_REQUEST)
@@ -157,7 +162,21 @@ def handler(ctx, data: io.BytesIO = None):
             })
             os.close(input_file)
 
-            call(['pdflatex', '-shell-escape', input_filename])
+            try:
+                call(['pdflatex', '-shell-escape', input_filename],
+                     timeout=compilation_timeout)
+            except TimeoutExpired:
+                clean_files(input_filename=input_filename,
+                            images_filename=images_filename)
+                encoder = MultipartEncoder({
+                    "message": "compilation timeout",
+                    "code": "timeout_error"
+                })
+                return Response(
+                    ctx, response_data=encoder.to_string(),
+                    headers={"Content-Type": encoder.content_type},
+                    status_code=BAD_REQUEST)
+
             output_filename = input_filename + '.pdf'
             matrix = fitz.Matrix(resolution, resolution)
 
@@ -170,7 +189,7 @@ def handler(ctx, data: io.BytesIO = None):
                     "message": "compilation failed",
                     "code": "latex_error"
                 })
-                return response.Response(
+                return Response(
                     ctx, response_data=encoder.to_string(),
                     headers={"Content-Type": encoder.content_type},
                     status_code=BAD_REQUEST)
@@ -191,7 +210,7 @@ def handler(ctx, data: io.BytesIO = None):
                 "code": "unknown_error",
                 "error": str(e)
             })
-            return response.Response(
+            return Response(
                 ctx, response_data=encoder.to_string(),
                 headers={"Content-Type": encoder.content_type},
                 status_code=INTERNAL_SERVER_ERROR
@@ -204,7 +223,7 @@ def handler(ctx, data: io.BytesIO = None):
             "code": "success",
             "jpg": ("result.jpg", blob)
         })
-        return response.Response(
+        return Response(
             ctx, response_data=encoder.to_string(),
             headers={"Content-Type": encoder.content_type},
             status_code=OK
